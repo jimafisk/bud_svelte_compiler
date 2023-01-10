@@ -1,8 +1,13 @@
+github.com/evanw/esbuild v0.16.16 h1:OIQUJpq2poGwVurrAC28br28WLPchdBTOPGXW8lqu1I=
+github.com/evanw/esbuild v0.16.16/go.mod h1:iINY06rn799hi48UqEnaQvVfZWe6W9bET78LbvN8VWk=
 github.com/livebud/bud v0.2.5 h1:JWZ6cDNkeQj/0BrXDu7DQPmCRBuDiGk+Ab/B2jMMda8=
 github.com/livebud/bud v0.2.5/go.mod h1:zVxDVjWGGaLtXZAuBGzU4VftOo9MOmvpso+hdruF3sg=
 github.com/livebud/js v0.0.0-20221112072017-b9e63b92aad5 h1:7fYJMOnT4WrnjRhJ8B6HiJBGcDVFd9jam0205gn9y1k=
 github.com/livebud/js v0.0.0-20221112072017-b9e63b92aad5/go.mod h1:TDkks+mVAlB96mxcbIAftAxpGteCxoBYGVF1JThjcLk=
 go.kuoruan.net/v8go-polyfills v0.5.1-0.20220727011656-c74c5b408ebd h1:lMfOO39WTD+CxBPmqZvLdISrLVsEjgNfWoV4viBt15M=
 go.kuoruan.net/v8go-polyfills v0.5.1-0.20220727011656-c74c5b408ebd/go.mod h1:egHzK8RIHR7dPOYzhnRsomClFTVmYCtvhTWqec4JXaY=
+golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.4.0 h1:Zr2JFtRQNX3BCZ8YtxRE9hNJYC8J6I1MVbMg6owUp18=
+golang.org/x/sys v0.4.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 rogchap.com/v8go v0.7.0 h1:kgjbiO4zE5itA962ze6Hqmbs4HgZbGzmueCXsZtremg=
 rogchap.com/v8go v0.7.0/go.mod h1:MxgP3pL2MW4dpme/72QRs8sgNMmM0pRc8DPhcuLWPAs=

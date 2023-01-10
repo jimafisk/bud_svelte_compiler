@@ -5,14 +5,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/test/test/svelte"
+	v8 "github.com/livebud/bud/package/js/v8"
+	"github.com/livebud/bud/package/svelte"
 )
 
 func main() {
 	start := time.Now()
 
 	hello, _ := os.ReadFile("hello.svelte")
-	vm, _ := Load()
+	vm, _ := v8.Load()
 	svelteCompiler, _ := svelte.Load(vm)
 	output, _ := svelteCompiler.DOM("hello.svelte", hello)
 	fmt.Println(output.JS)
