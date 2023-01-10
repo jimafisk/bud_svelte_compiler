@@ -1,0 +1,8 @@
+github.com/livebud/bud v0.2.5 h1:JWZ6cDNkeQj/0BrXDu7DQPmCRBuDiGk+Ab/B2jMMda8=
+github.com/livebud/bud v0.2.5/go.mod h1:zVxDVjWGGaLtXZAuBGzU4VftOo9MOmvpso+hdruF3sg=
+github.com/livebud/js v0.0.0-20221112072017-b9e63b92aad5 h1:7fYJMOnT4WrnjRhJ8B6HiJBGcDVFd9jam0205gn9y1k=
+github.com/livebud/js v0.0.0-20221112072017-b9e63b92aad5/go.mod h1:TDkks+mVAlB96mxcbIAftAxpGteCxoBYGVF1JThjcLk=
+go.kuoruan.net/v8go-polyfills v0.5.1-0.20220727011656-c74c5b408ebd h1:lMfOO39WTD+CxBPmqZvLdISrLVsEjgNfWoV4viBt15M=
+go.kuoruan.net/v8go-polyfills v0.5.1-0.20220727011656-c74c5b408ebd/go.mod h1:egHzK8RIHR7dPOYzhnRsomClFTVmYCtvhTWqec4JXaY=
+rogchap.com/v8go v0.7.0 h1:kgjbiO4zE5itA962ze6Hqmbs4HgZbGzmueCXsZtremg=
+rogchap.com/v8go v0.7.0/go.mod h1:MxgP3pL2MW4dpme/72QRs8sgNMmM0pRc8DPhcuLWPAs=
