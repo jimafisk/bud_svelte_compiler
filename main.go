@@ -30,10 +30,10 @@ func main() {
 			os.MkdirAll(filepath.Dir(destPath), os.ModePerm)
 
 			DOM, _ := svelteCompiler.DOM(path, fileContents)
-			ioutil.WriteFile(destPath+"DOM", []byte(DOM.JS), os.ModePerm)
+			ioutil.WriteFile(strings.TrimSuffix(destPath, ".svelte")+"_DOM.js", []byte(DOM.JS), os.ModePerm)
 
 			SSR, _ := svelteCompiler.SSR(path, fileContents)
-			ioutil.WriteFile(destPath+"SSR", []byte(SSR.JS), os.ModePerm)
+			ioutil.WriteFile(strings.TrimSuffix(destPath, ".svelte")+"_SSR.js", []byte(SSR.JS), os.ModePerm)
 		}
 
 		return nil
