@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	v8 "github.com/livebud/bud/package/js/v8"
@@ -24,10 +26,14 @@ func main() {
 
 		if !info.IsDir() && filepath.Ext(path) == ".svelte" {
 			fileContents, _ := os.ReadFile(path)
+			destPath := "output" + strings.TrimPrefix(path, "templates")
+			os.MkdirAll(filepath.Dir(destPath), os.ModePerm)
+
 			DOM, _ := svelteCompiler.DOM(path, fileContents)
-			fmt.Println(DOM.JS)
+			ioutil.WriteFile(destPath+"DOM", []byte(DOM.JS), os.ModePerm)
+
 			SSR, _ := svelteCompiler.SSR(path, fileContents)
-			fmt.Println(SSR.JS)
+			ioutil.WriteFile(destPath+"SSR", []byte(SSR.JS), os.ModePerm)
 		}
 
 		return nil
