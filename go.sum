@@ -1,5 +1,7 @@
 github.com/evanw/esbuild v0.16.16 h1:OIQUJpq2poGwVurrAC28br28WLPchdBTOPGXW8lqu1I=
 github.com/evanw/esbuild v0.16.16/go.mod h1:iINY06rn799hi48UqEnaQvVfZWe6W9bET78LbvN8VWk=
+github.com/evanw/esbuild v0.17.0 h1:gGx9TCZDO9k9x1PJdizx6syIpUq29RwrtHWlgDIdQH8=
+github.com/evanw/esbuild v0.17.0/go.mod h1:iINY06rn799hi48UqEnaQvVfZWe6W9bET78LbvN8VWk=
 github.com/livebud/bud v0.2.5 h1:JWZ6cDNkeQj/0BrXDu7DQPmCRBuDiGk+Ab/B2jMMda8=
 github.com/livebud/bud v0.2.5/go.mod h1:zVxDVjWGGaLtXZAuBGzU4VftOo9MOmvpso+hdruF3sg=
 github.com/livebud/js v0.0.0-20221112072017-b9e63b92aad5 h1:7fYJMOnT4WrnjRhJ8B6HiJBGcDVFd9jam0205gn9y1k=
