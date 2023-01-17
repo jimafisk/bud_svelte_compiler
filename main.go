@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -18,14 +19,13 @@ func main() {
 
 	vm, _ := v8.Load()
 	svelteCompiler, _ := svelte.Load(vm)
+	entrynodes := []string{}
 
 	filepath.Walk("templates", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			fmt.Println(err)
 			return nil
 		}
-
-		nodes := []string{}
 
 		if !info.IsDir() && filepath.Ext(path) == ".svelte" {
 			fileContents, _ := os.ReadFile(path)
@@ -43,27 +43,43 @@ func main() {
 			ioutil.WriteFile(SSRDest, []byte(SSR.JS), os.ModePerm)
 
 			if strings.Contains(destPath, "content") {
-				nodes = append(nodes, SSRDest)
+				entrynodes = append(entrynodes, SSRDest)
 			}
 		}
-		bundle(nodes)
 
 		return nil
 	})
+
+	bundledEntrynodes := bundle(entrynodes)
+	props := map[string]string{
+		"content":    "",
+		"layout":     "",
+		"allContent": "",
+		"allLayouts": "",
+		"env":        "",
+		"user":       "",
+		"adminMenu":  "",
+	}
+	input, _ := json.Marshal(props)
+	for _, file := range bundledEntrynodes {
+		destPath := strings.TrimSuffix(file.Path, filepath.Ext(file.Path)) + ".html"
+		htmlFile, _ := vm.Eval("render.js", string(file.Contents)+`; bud.render("`+file.Path+`", `+string(input)+`)`)
+		ioutil.WriteFile(destPath, []byte(htmlFile), os.ModePerm)
+	}
 
 	elapsed := time.Since(start)
 	fmt.Println(elapsed)
 }
 
-func bundle(entrypoints []string) {
-	destPath := "bundled_entrypoints"
-	os.MkdirAll(filepath.Dir(destPath), os.ModePerm)
+func bundle(entrypoints []string) []esbuild.OutputFile {
+	destPath := "html"
+	os.MkdirAll(destPath, os.ModePerm)
 	result := esbuild.Build(esbuild.BuildOptions{
 		EntryPoints: entrypoints,
 		Bundle:      true,
 		Outdir:      destPath,
+		//Write: true,
 		//ResolveExtensions: []string{".js", ".svelte"},
-		Write: true,
 		//OutExtension: map[string]string{".js": ".svelte"},
 		//Plugins: []esbuild.Plugin{sveltePlugin()},
 	})
@@ -75,9 +91,7 @@ func bundle(entrypoints []string) {
 		})
 		fmt.Printf(strings.Join(msgs, "\n"))
 	}
-	if len(result.OutputFiles) > 0 {
-		fmt.Println(string(result.OutputFiles[0].Contents))
-	}
+	return result.OutputFiles
 }
 
 func sveltePlugin() esbuild.Plugin {
