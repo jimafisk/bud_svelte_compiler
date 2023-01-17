@@ -39,11 +39,11 @@ func main() {
 			SSRDest := "js/ssr" + strings.TrimSuffix(destPath, ".svelte") + ".js"
 			os.MkdirAll(filepath.Dir(SSRDest), os.ModePerm)
 			SSR, _ := svelteCompiler.SSR(path, fileContents)
+			SSR.JS = strings.ReplaceAll(SSR.JS, ".svelte", ".js")
 			ioutil.WriteFile(SSRDest, []byte(SSR.JS), os.ModePerm)
 
 			if strings.Contains(destPath, "content") {
 				nodes = append(nodes, SSRDest)
-				//bundle(SSRDest)
 			}
 		}
 		bundle(nodes)
@@ -55,16 +55,17 @@ func main() {
 	fmt.Println(elapsed)
 }
 
-//func bundle(entrypoint string) {
 func bundle(entrypoints []string) {
-	destPath := "html_output"
+	destPath := "bundled_entrypoints"
 	os.MkdirAll(filepath.Dir(destPath), os.ModePerm)
 	result := esbuild.Build(esbuild.BuildOptions{
-		//EntryPoints: []string{entrypoint},
 		EntryPoints: entrypoints,
 		Bundle:      true,
 		Outdir:      destPath,
-		Plugins:     []esbuild.Plugin{sveltePlugin()},
+		//ResolveExtensions: []string{".js", ".svelte"},
+		Write: true,
+		//OutExtension: map[string]string{".js": ".svelte"},
+		//Plugins: []esbuild.Plugin{sveltePlugin()},
 	})
 	if len(result.Errors) > 0 {
 		msgs := esbuild.FormatMessages(result.Errors, esbuild.FormatMessagesOptions{
@@ -82,17 +83,13 @@ func bundle(entrypoints []string) {
 func sveltePlugin() esbuild.Plugin {
 	return esbuild.Plugin{
 		Name: "svelte",
-		Setup: func(epb esbuild.PluginBuild) {
-			epb.OnResolve(esbuild.OnResolveOptions{Filter: `.*`}, func(args esbuild.OnResolveArgs) (result esbuild.OnResolveResult, err error) {
-				fmt.Println("RESULT: " + result.Path)
-				fmt.Println("ARGS: " + args.Path)
-				//result.Path = strings.Replace(args.Path, ".svelte", ".js", -1)
-				//result.Namespace = "svelte"
+		Setup: func(build esbuild.PluginBuild) {
+			build.OnResolve(esbuild.OnResolveOptions{Filter: `^.*\.svelte$`}, func(args esbuild.OnResolveArgs) (result esbuild.OnResolveResult, err error) {
+				result.Path = strings.TrimSuffix(args.Path, ".svelte") + ".js"
+				result.Namespace = "svelte"
 				return result, nil
 			})
-			epb.OnLoad(esbuild.OnLoadOptions{Filter: `.*`, Namespace: "svelte"}, func(args esbuild.OnLoadArgs) (result esbuild.OnLoadResult, err error) {
-				//result.ResolveDir = dir
-				//result.Contents = &svelteRuntime
+			build.OnLoad(esbuild.OnLoadOptions{Filter: `.*`, Namespace: "svelte"}, func(args esbuild.OnLoadArgs) (result esbuild.OnLoadResult, err error) {
 				result.Loader = esbuild.LoaderJS
 				return result, nil
 			})
