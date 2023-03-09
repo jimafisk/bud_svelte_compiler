@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -17,8 +18,13 @@ import (
 func main() {
 	start := time.Now()
 
+	// Setup Svelte Compiler
 	vm, _ := v8.Load()
 	svelteCompiler, _ := svelte.Load(vm)
+
+	// Regex to find component name
+	r, _ := regexp.Compile(`\s*var\s.*_default\s=\s(.*);\s*$`)
+	// Initialize entrypoint pages
 	entrynodes := []string{}
 
 	filepath.Walk("templates", func(path string, info os.FileInfo, err error) error {
@@ -83,8 +89,13 @@ func main() {
 		contentStr = strings.TrimPrefix(contentStr, "(() => {\n")
 		contentStr = strings.TrimSuffix(contentStr, "})();\n")
 
+		compName := ""
+		compNames := r.FindStringSubmatch(contentStr)
+		if len(compNames) > 1 {
+			compName = compNames[1]
+		}
 		// Actually render the HTML from the unwrapped bundles
-		htmlFile, err := vm.Eval("render.js", contentStr+`; _404.render(`+propsJSONStr+`).html;`)
+		htmlFile, err := vm.Eval("render.js", contentStr+`; `+compName+`.render(`+propsJSONStr+`).html;`)
 		if err != nil {
 			fmt.Println(err)
 		}
