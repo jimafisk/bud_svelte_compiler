@@ -50,6 +50,8 @@ func main() {
 		return nil
 	})
 
+	//reStart, _ := regexp.Compile(`^\(\(\)\s=>\s{$`)
+	//reEnd, _ := regexp.Compile(`^}\)\(\);$`)
 	bundledEntrynodes := bundle(entrynodes)
 	props := map[string]string{
 		"content":    "",
@@ -60,10 +62,45 @@ func main() {
 		"user":       "",
 		"adminMenu":  "",
 	}
-	input, _ := json.Marshal(props)
+	propsJSON, _ := json.Marshal(props)
+	propsJSONStr := string(propsJSON)
+	//r, _ := regexp.Compile(`^\s*export\sdefault\s([A-Z_][a-z0-9_]*);\s*$`)
+	//r, _ := regexp.Compile(`export\sdefault\s([A-Z_][a-z0-9_]*);`)
+	//input, _ := json.Marshal(props)
 	for _, file := range bundledEntrynodes {
+		bundledPath := strings.Replace(string(file.Path), "html/", "js/bundled/", 1)
+		os.MkdirAll(filepath.Dir(bundledPath), os.ModePerm)
+		contentStr := string(file.Contents)
+		contentStr = strings.TrimPrefix(contentStr, "(() => {\n")
+		contentStr = strings.TrimSuffix(contentStr, "})();\n")
+		//ioutil.WriteFile(bundledPath, file.Contents, os.ModePerm)
+		ioutil.WriteFile(bundledPath, []byte(contentStr), os.ModePerm)
+		//fmt.Println(file.Path)
+		//fmt.Println(string(file.Contents))
+		/*
+			compName := ""
+			compNames := r.FindStringSubmatch(string(file.Contents))
+			fmt.Println(compNames)
+			if len(compNames) > 0 {
+				compName = compNames[0]
+			}
+			fmt.Println(compName)
+			//fmt.Println(string(file.Contents))
+		*/
+		//svelteCompiler.VM.Script("render.js", string(file.Contents))
 		destPath := strings.TrimSuffix(file.Path, filepath.Ext(file.Path)) + ".html"
-		htmlFile, _ := vm.Eval("render.js", string(file.Contents)+`; bud.render("`+file.Path+`", `+string(input)+`)`)
+		//htmlFile, _ := svelteCompiler.VM.Eval("render.js", string(file.Contents)+`; pages_default.render("`+file.Path+`", `+string(input)+`)`)
+		//svelteCompiler.VM.Script("render.js", string(file.Contents))
+		//htmlFile, err := svelteCompiler.VM.Eval("render.js", `pages_default.render(`+propsJSONStr+`)`)
+		//htmlFile, err := svelteCompiler.VM.Eval("render.js", `bud.render(`+propsJSONStr+`)`)
+		//htmlFile, err := vm.Eval("render.js", string(file.Contents)+`.run(); render(`+propsJSONStr+`)`)
+		htmlFile, err := vm.Eval("render.js", contentStr+`; _404.render(`+propsJSONStr+`).html;`)
+		fmt.Println(htmlFile)
+		if err != nil {
+			fmt.Println(err)
+		}
+		//htmlFile, _ := svelteCompiler.VM.Eval("render.js", compName+".render("+propsJSONStr+")")
+		//htmlFile, _ := svelteCompiler.VM.Eval("render.js", "pages_default.render("+propsJSONStr+")")
 		ioutil.WriteFile(destPath, []byte(htmlFile), os.ModePerm)
 	}
 
