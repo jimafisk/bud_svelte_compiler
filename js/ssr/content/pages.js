@@ -3,27 +3,14 @@ import {
 	add_attribute,
 	create_ssr_component,
 	each,
-	escape,
-	subscribe,
-	validate_component,
-	validate_store
+	escape
 } from "svelte/internal";
 
-import Uses from "../components/source.js";
-
 const Pages = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-	let $user, $$unsubscribe_user;
-	let { title, description, image, source, content, cms, user } = $$props;
-	validate_store(user, 'user');
-	$$unsubscribe_user = subscribe(user, value => $user = value);
+	let { title = "pages title" } = $$props;
+	let description = ["some desc content", "more desc content"];
+	let image = { src: "/whatever.jpg", alt: "something" };
 	if ($$props.title === void 0 && $$bindings.title && title !== void 0) $$bindings.title(title);
-	if ($$props.description === void 0 && $$bindings.description && description !== void 0) $$bindings.description(description);
-	if ($$props.image === void 0 && $$bindings.image && image !== void 0) $$bindings.image(image);
-	if ($$props.source === void 0 && $$bindings.source && source !== void 0) $$bindings.source(source);
-	if ($$props.content === void 0 && $$bindings.content && content !== void 0) $$bindings.content(content);
-	if ($$props.cms === void 0 && $$bindings.cms && cms !== void 0) $$bindings.cms(cms);
-	if ($$props.user === void 0 && $$bindings.user && user !== void 0) $$bindings.user(user);
-	$$unsubscribe_user();
 
 	return `<h1>${escape(title)}</h1>
 
@@ -33,12 +20,6 @@ const Pages = create_ssr_component(($$result, $$props, $$bindings, slots) => {
 
 ${image
 	? `<div><img${add_attribute("src", image.src, 0)}${add_attribute("alt", image.alt, 0)}></div>`
-	: ``}
-
-${cms ? `<p>Try it out: <button>Login</button></p>` : ``}
-
-${source
-	? `${validate_component(Uses, "Uses").$$render($$result, { content, source }, {}, {})}`
 	: ``}
 
 <p><a href="${"."}">Back home</a></p>`;

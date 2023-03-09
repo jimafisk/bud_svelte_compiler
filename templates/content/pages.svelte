@@ -1,6 +1,13 @@
 <script>
-  export let title, description, image, source, content, cms, user;
-  import Uses from "../components/source.svelte";
+  export let title = "pages title";
+  let description = [
+    "some desc content",
+    "more desc content"
+  ];
+  let image = {
+    src: "/whatever.jpg",
+    alt: "something"
+  }
 </script>
 
 <h1>{title}</h1>
@@ -15,14 +22,6 @@
   <div>
     <img src="{image.src}" alt="{image.alt}" />
   </div>
-{/if}
-
-{#if cms}
-  <p>Try it out: <button on:click={$user.login}>Login</button></p>
-{/if}
-
-{#if source}
-  <Uses {content} {source} />
 {/if}
 
 <p><a href=".">Back home</a></p>

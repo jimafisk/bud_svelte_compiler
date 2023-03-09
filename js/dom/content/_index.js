@@ -4,48 +4,36 @@ import {
 	add_location,
 	append_hydration_dev,
 	attr_dev,
-	check_outros,
 	children,
-	claim_component,
 	claim_element,
 	claim_space,
 	claim_text,
-	create_component,
-	destroy_component,
 	destroy_each,
 	detach_dev,
 	dispatch_dev,
 	element,
-	empty,
-	group_outros,
 	init,
 	insert_hydration_dev,
-	mount_component,
+	noop,
 	safe_not_equal,
-	set_data_dev,
 	space,
 	text,
-	transition_in,
-	transition_out,
 	validate_each_argument,
 	validate_slots
 } from "svelte/internal";
 
-import Grid from '../components/grid.svelte';
-import Uses from "../components/source.svelte";
-import Pager from "../components/pager.svelte";
 const file = "templates/content/_index.svelte";
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[13] = list[i];
+	child_ctx[2] = list[i];
 	return child_ctx;
 }
 
-// (19:1) {#each intro as paragraph}
+// (12:1) {#each intro as paragraph}
 function create_each_block(ctx) {
 	let p;
-	let raw_value = /*paragraph*/ ctx[13] + "";
+	let raw_value = /*paragraph*/ ctx[2] + "";
 
 	const block = {
 		c: function create() {
@@ -59,15 +47,13 @@ function create_each_block(ctx) {
 			this.h();
 		},
 		h: function hydrate() {
-			add_location(p, file, 19, 2, 630);
+			add_location(p, file, 12, 2, 167);
 		},
 		m: function mount(target, anchor) {
 			insert_hydration_dev(target, p, anchor);
 			p.innerHTML = raw_value;
 		},
-		p: function update(ctx, dirty) {
-			if (dirty & /*intro*/ 2 && raw_value !== (raw_value = /*paragraph*/ ctx[13] + "")) p.innerHTML = raw_value;;
-		},
+		p: noop,
 		d: function destroy(detaching) {
 			if (detaching) detach_dev(p);
 		}
@@ -77,177 +63,7 @@ function create_each_block(ctx) {
 		block,
 		id: create_each_block.name,
 		type: "each",
-		source: "(19:1) {#each intro as paragraph}",
-		ctx
-	});
-
-	return block;
-}
-
-// (24:0) {#if blog}
-function create_if_block_1(ctx) {
-	let div;
-	let h3;
-	let t0;
-	let t1;
-	let grid;
-	let t2;
-	let br;
-	let t3;
-	let pager;
-	let current;
-
-	grid = new Grid({
-			props: {
-				items: /*allPosts*/ ctx[8],
-				postRangeLow: /*postRangeLow*/ ctx[7],
-				postRangeHigh: /*postRangeHigh*/ ctx[5]
-			},
-			$$inline: true
-		});
-
-	pager = new Pager({
-			props: {
-				currentPage: /*currentPage*/ ctx[6],
-				totalPages: /*totalPages*/ ctx[9]
-			},
-			$$inline: true
-		});
-
-	const block = {
-		c: function create() {
-			div = element("div");
-			h3 = element("h3");
-			t0 = text("Recent blog posts:");
-			t1 = space();
-			create_component(grid.$$.fragment);
-			t2 = space();
-			br = element("br");
-			t3 = space();
-			create_component(pager.$$.fragment);
-			this.h();
-		},
-		l: function claim(nodes) {
-			div = claim_element(nodes, "DIV", {});
-			var div_nodes = children(div);
-			h3 = claim_element(div_nodes, "H3", {});
-			var h3_nodes = children(h3);
-			t0 = claim_text(h3_nodes, "Recent blog posts:");
-			h3_nodes.forEach(detach_dev);
-			t1 = claim_space(div_nodes);
-			claim_component(grid.$$.fragment, div_nodes);
-			t2 = claim_space(div_nodes);
-			br = claim_element(div_nodes, "BR", {});
-			div_nodes.forEach(detach_dev);
-			t3 = claim_space(nodes);
-			claim_component(pager.$$.fragment, nodes);
-			this.h();
-		},
-		h: function hydrate() {
-			add_location(h3, file, 25, 2, 696);
-			add_location(br, file, 27, 2, 785);
-			add_location(div, file, 24, 1, 688);
-		},
-		m: function mount(target, anchor) {
-			insert_hydration_dev(target, div, anchor);
-			append_hydration_dev(div, h3);
-			append_hydration_dev(h3, t0);
-			append_hydration_dev(div, t1);
-			mount_component(grid, div, null);
-			append_hydration_dev(div, t2);
-			append_hydration_dev(div, br);
-			insert_hydration_dev(target, t3, anchor);
-			mount_component(pager, target, anchor);
-			current = true;
-		},
-		p: function update(ctx, dirty) {
-			const grid_changes = {};
-			if (dirty & /*postRangeLow*/ 128) grid_changes.postRangeLow = /*postRangeLow*/ ctx[7];
-			if (dirty & /*postRangeHigh*/ 32) grid_changes.postRangeHigh = /*postRangeHigh*/ ctx[5];
-			grid.$set(grid_changes);
-			const pager_changes = {};
-			if (dirty & /*currentPage*/ 64) pager_changes.currentPage = /*currentPage*/ ctx[6];
-			pager.$set(pager_changes);
-		},
-		i: function intro(local) {
-			if (current) return;
-			transition_in(grid.$$.fragment, local);
-			transition_in(pager.$$.fragment, local);
-			current = true;
-		},
-		o: function outro(local) {
-			transition_out(grid.$$.fragment, local);
-			transition_out(pager.$$.fragment, local);
-			current = false;
-		},
-		d: function destroy(detaching) {
-			if (detaching) detach_dev(div);
-			destroy_component(grid);
-			if (detaching) detach_dev(t3);
-			destroy_component(pager, detaching);
-		}
-	};
-
-	dispatch_dev("SvelteRegisterBlock", {
-		block,
-		id: create_if_block_1.name,
-		type: "if",
-		source: "(24:0) {#if blog}",
-		ctx
-	});
-
-	return block;
-}
-
-// (33:0) {#if source}
-function create_if_block(ctx) {
-	let uses;
-	let current;
-
-	uses = new Uses({
-			props: {
-				content: /*content*/ ctx[4],
-				source: /*source*/ ctx[3]
-			},
-			$$inline: true
-		});
-
-	const block = {
-		c: function create() {
-			create_component(uses.$$.fragment);
-		},
-		l: function claim(nodes) {
-			claim_component(uses.$$.fragment, nodes);
-		},
-		m: function mount(target, anchor) {
-			mount_component(uses, target, anchor);
-			current = true;
-		},
-		p: function update(ctx, dirty) {
-			const uses_changes = {};
-			if (dirty & /*content*/ 16) uses_changes.content = /*content*/ ctx[4];
-			if (dirty & /*source*/ 8) uses_changes.source = /*source*/ ctx[3];
-			uses.$set(uses_changes);
-		},
-		i: function intro(local) {
-			if (current) return;
-			transition_in(uses.$$.fragment, local);
-			current = true;
-		},
-		o: function outro(local) {
-			transition_out(uses.$$.fragment, local);
-			current = false;
-		},
-		d: function destroy(detaching) {
-			destroy_component(uses, detaching);
-		}
-	};
-
-	dispatch_dev("SvelteRegisterBlock", {
-		block,
-		id: create_if_block.name,
-		type: "if",
-		source: "(33:0) {#if source}",
+		source: "(12:1) {#each intro as paragraph}",
 		ctx
 	});
 
@@ -259,11 +75,7 @@ function create_fragment(ctx) {
 	let t0;
 	let t1;
 	let section;
-	let t2;
-	let t3;
-	let if_block1_anchor;
-	let current;
-	let each_value = /*intro*/ ctx[1];
+	let each_value = /*intro*/ ctx[0];
 	validate_each_argument(each_value);
 	let each_blocks = [];
 
@@ -271,13 +83,10 @@ function create_fragment(ctx) {
 		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
 	}
 
-	let if_block0 = /*blog*/ ctx[2] && create_if_block_1(ctx);
-	let if_block1 = /*source*/ ctx[3] && create_if_block(ctx);
-
 	const block = {
 		c: function create() {
 			h1 = element("h1");
-			t0 = text(/*title*/ ctx[0]);
+			t0 = text("Homepage title");
 			t1 = space();
 			section = element("section");
 
@@ -285,17 +94,12 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			t2 = space();
-			if (if_block0) if_block0.c();
-			t3 = space();
-			if (if_block1) if_block1.c();
-			if_block1_anchor = empty();
 			this.h();
 		},
 		l: function claim(nodes) {
 			h1 = claim_element(nodes, "H1", {});
 			var h1_nodes = children(h1);
-			t0 = claim_text(h1_nodes, /*title*/ ctx[0]);
+			t0 = claim_text(h1_nodes, "Homepage title");
 			h1_nodes.forEach(detach_dev);
 			t1 = claim_space(nodes);
 			section = claim_element(nodes, "SECTION", { id: true });
@@ -306,17 +110,12 @@ function create_fragment(ctx) {
 			}
 
 			section_nodes.forEach(detach_dev);
-			t2 = claim_space(nodes);
-			if (if_block0) if_block0.l(nodes);
-			t3 = claim_space(nodes);
-			if (if_block1) if_block1.l(nodes);
-			if_block1_anchor = empty();
 			this.h();
 		},
 		h: function hydrate() {
-			add_location(h1, file, 15, 0, 561);
+			add_location(h1, file, 8, 0, 91);
 			attr_dev(section, "id", "intro");
-			add_location(section, file, 17, 0, 579);
+			add_location(section, file, 10, 0, 116);
 		},
 		m: function mount(target, anchor) {
 			insert_hydration_dev(target, h1, anchor);
@@ -327,19 +126,10 @@ function create_fragment(ctx) {
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].m(section, null);
 			}
-
-			insert_hydration_dev(target, t2, anchor);
-			if (if_block0) if_block0.m(target, anchor);
-			insert_hydration_dev(target, t3, anchor);
-			if (if_block1) if_block1.m(target, anchor);
-			insert_hydration_dev(target, if_block1_anchor, anchor);
-			current = true;
 		},
 		p: function update(ctx, [dirty]) {
-			if (!current || dirty & /*title*/ 1) set_data_dev(t0, /*title*/ ctx[0]);
-
-			if (dirty & /*intro*/ 2) {
-				each_value = /*intro*/ ctx[1];
+			if (dirty & /*intro*/ 1) {
+				each_value = /*intro*/ ctx[0];
 				validate_each_argument(each_value);
 				let i;
 
@@ -361,74 +151,14 @@ function create_fragment(ctx) {
 
 				each_blocks.length = each_value.length;
 			}
-
-			if (/*blog*/ ctx[2]) {
-				if (if_block0) {
-					if_block0.p(ctx, dirty);
-
-					if (dirty & /*blog*/ 4) {
-						transition_in(if_block0, 1);
-					}
-				} else {
-					if_block0 = create_if_block_1(ctx);
-					if_block0.c();
-					transition_in(if_block0, 1);
-					if_block0.m(t3.parentNode, t3);
-				}
-			} else if (if_block0) {
-				group_outros();
-
-				transition_out(if_block0, 1, 1, () => {
-					if_block0 = null;
-				});
-
-				check_outros();
-			}
-
-			if (/*source*/ ctx[3]) {
-				if (if_block1) {
-					if_block1.p(ctx, dirty);
-
-					if (dirty & /*source*/ 8) {
-						transition_in(if_block1, 1);
-					}
-				} else {
-					if_block1 = create_if_block(ctx);
-					if_block1.c();
-					transition_in(if_block1, 1);
-					if_block1.m(if_block1_anchor.parentNode, if_block1_anchor);
-				}
-			} else if (if_block1) {
-				group_outros();
-
-				transition_out(if_block1, 1, 1, () => {
-					if_block1 = null;
-				});
-
-				check_outros();
-			}
 		},
-		i: function intro(local) {
-			if (current) return;
-			transition_in(if_block0);
-			transition_in(if_block1);
-			current = true;
-		},
-		o: function outro(local) {
-			transition_out(if_block0);
-			transition_out(if_block1);
-			current = false;
-		},
+		i: noop,
+		o: noop,
 		d: function destroy(detaching) {
 			if (detaching) detach_dev(h1);
 			if (detaching) detach_dev(t1);
 			if (detaching) detach_dev(section);
 			destroy_each(each_blocks, detaching);
-			if (detaching) detach_dev(t2);
-			if (if_block0) if_block0.d(detaching);
-			if (detaching) detach_dev(t3);
-			if (if_block1) if_block1.d(detaching);
-			if (detaching) detach_dev(if_block1_anchor);
 		}
 	};
 
@@ -444,111 +174,38 @@ function create_fragment(ctx) {
 }
 
 function instance($$self, $$props, $$invalidate) {
-	let currentPage;
-	let postRangeHigh;
-	let postRangeLow;
 	let { $$slots: slots = {}, $$scope } = $$props;
 	validate_slots('Index', slots, []);
-	let { title, intro, blog, source, content, allContent } = $$props;
-	let postsPerPage = 3;
-	let allPosts = allContent.filter(content => content.type == "blog");
-	let totalPosts = allPosts.length;
-	let totalPages = Math.ceil(totalPosts / postsPerPage);
-	const writable_props = ['title', 'intro', 'blog', 'source', 'content', 'allContent'];
+	let { title } = $$props;
+	let intro = ["first thing", "second thing"];
+	const writable_props = ['title'];
 
 	Object.keys($$props).forEach(key => {
 		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<Index> was created with unknown prop '${key}'`);
 	});
 
 	$$self.$$set = $$props => {
-		if ('title' in $$props) $$invalidate(0, title = $$props.title);
-		if ('intro' in $$props) $$invalidate(1, intro = $$props.intro);
-		if ('blog' in $$props) $$invalidate(2, blog = $$props.blog);
-		if ('source' in $$props) $$invalidate(3, source = $$props.source);
-		if ('content' in $$props) $$invalidate(4, content = $$props.content);
-		if ('allContent' in $$props) $$invalidate(10, allContent = $$props.allContent);
+		if ('title' in $$props) $$invalidate(1, title = $$props.title);
 	};
 
-	$$self.$capture_state = () => ({
-		title,
-		intro,
-		blog,
-		source,
-		content,
-		allContent,
-		Grid,
-		Uses,
-		Pager,
-		postsPerPage,
-		allPosts,
-		totalPosts,
-		totalPages,
-		postRangeHigh,
-		postRangeLow,
-		currentPage
-	});
+	$$self.$capture_state = () => ({ title, intro });
 
 	$$self.$inject_state = $$props => {
-		if ('title' in $$props) $$invalidate(0, title = $$props.title);
-		if ('intro' in $$props) $$invalidate(1, intro = $$props.intro);
-		if ('blog' in $$props) $$invalidate(2, blog = $$props.blog);
-		if ('source' in $$props) $$invalidate(3, source = $$props.source);
-		if ('content' in $$props) $$invalidate(4, content = $$props.content);
-		if ('allContent' in $$props) $$invalidate(10, allContent = $$props.allContent);
-		if ('postsPerPage' in $$props) $$invalidate(11, postsPerPage = $$props.postsPerPage);
-		if ('allPosts' in $$props) $$invalidate(8, allPosts = $$props.allPosts);
-		if ('totalPosts' in $$props) totalPosts = $$props.totalPosts;
-		if ('totalPages' in $$props) $$invalidate(9, totalPages = $$props.totalPages);
-		if ('postRangeHigh' in $$props) $$invalidate(5, postRangeHigh = $$props.postRangeHigh);
-		if ('postRangeLow' in $$props) $$invalidate(7, postRangeLow = $$props.postRangeLow);
-		if ('currentPage' in $$props) $$invalidate(6, currentPage = $$props.currentPage);
+		if ('title' in $$props) $$invalidate(1, title = $$props.title);
+		if ('intro' in $$props) $$invalidate(0, intro = $$props.intro);
 	};
 
 	if ($$props && "$$inject" in $$props) {
 		$$self.$inject_state($$props.$$inject);
 	}
 
-	$$self.$$.update = () => {
-		if ($$self.$$.dirty & /*content*/ 16) {
-			$: $$invalidate(6, currentPage = content.pager ? content.pager : 1);
-		}
-
-		if ($$self.$$.dirty & /*currentPage*/ 64) {
-			$: $$invalidate(5, postRangeHigh = currentPage * postsPerPage);
-		}
-
-		if ($$self.$$.dirty & /*postRangeHigh*/ 32) {
-			$: $$invalidate(7, postRangeLow = postRangeHigh - postsPerPage);
-		}
-	};
-
-	return [
-		title,
-		intro,
-		blog,
-		source,
-		content,
-		postRangeHigh,
-		currentPage,
-		postRangeLow,
-		allPosts,
-		totalPages,
-		allContent
-	];
+	return [intro, title];
 }
 
 class Index extends SvelteComponentDev {
 	constructor(options) {
 		super(options);
-
-		init(this, options, instance, create_fragment, safe_not_equal, {
-			title: 0,
-			intro: 1,
-			blog: 2,
-			source: 3,
-			content: 4,
-			allContent: 10
-		});
+		init(this, options, instance, create_fragment, safe_not_equal, { title: 1 });
 
 		dispatch_dev("SvelteRegisterComponent", {
 			component: this,
@@ -560,28 +217,8 @@ class Index extends SvelteComponentDev {
 		const { ctx } = this.$$;
 		const props = options.props || {};
 
-		if (/*title*/ ctx[0] === undefined && !('title' in props)) {
+		if (/*title*/ ctx[1] === undefined && !('title' in props)) {
 			console.warn("<Index> was created without expected prop 'title'");
-		}
-
-		if (/*intro*/ ctx[1] === undefined && !('intro' in props)) {
-			console.warn("<Index> was created without expected prop 'intro'");
-		}
-
-		if (/*blog*/ ctx[2] === undefined && !('blog' in props)) {
-			console.warn("<Index> was created without expected prop 'blog'");
-		}
-
-		if (/*source*/ ctx[3] === undefined && !('source' in props)) {
-			console.warn("<Index> was created without expected prop 'source'");
-		}
-
-		if (/*content*/ ctx[4] === undefined && !('content' in props)) {
-			console.warn("<Index> was created without expected prop 'content'");
-		}
-
-		if (/*allContent*/ ctx[10] === undefined && !('allContent' in props)) {
-			console.warn("<Index> was created without expected prop 'allContent'");
 		}
 	}
 
@@ -590,46 +227,6 @@ class Index extends SvelteComponentDev {
 	}
 
 	set title(value) {
-		throw new Error("<Index>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-	}
-
-	get intro() {
-		throw new Error("<Index>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-	}
-
-	set intro(value) {
-		throw new Error("<Index>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-	}
-
-	get blog() {
-		throw new Error("<Index>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-	}
-
-	set blog(value) {
-		throw new Error("<Index>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-	}
-
-	get source() {
-		throw new Error("<Index>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-	}
-
-	set source(value) {
-		throw new Error("<Index>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-	}
-
-	get content() {
-		throw new Error("<Index>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-	}
-
-	set content(value) {
-		throw new Error("<Index>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-	}
-
-	get allContent() {
-		throw new Error("<Index>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-	}
-
-	set allContent(value) {
 		throw new Error("<Index>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
 	}
 }

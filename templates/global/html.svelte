@@ -10,9 +10,6 @@
 <html lang="en">
 <Head title={makeTitle(content.filename)} {env} />
 <body>
-  {#if user && $user.isAuthenticated}
-      <svelte:component this={adminMenu} {user} bind:content={content} />
-  {/if}
   <main>
     <Nav />
     <div class="container">

@@ -2,9 +2,7 @@
 import {
 	create_ssr_component,
 	missing_component,
-	subscribe,
-	validate_component,
-	validate_store
+	validate_component
 } from "svelte/internal";
 
 import Head from './head.js';
@@ -14,14 +12,11 @@ import { makeTitle } from '../scripts/make_title.js';
 
 const css = {
 	code: "main.js-1jzy6jg{flex:1 0 auto}",
-	map: "{\"version\":3,\"file\":\"html.js\",\"sources\":[\"html.js\"],\"sourcesContent\":[\"<script>\\n  import Head from './head.js';\\n  import Nav from './nav.js';\\n  import Footer from './footer.js';\\n  import { makeTitle } from '../scripts/make_title.js';\\n\\n  export let content, layout, allContent, allLayouts, env, user, adminMenu;\\n</script>\\n\\n<html lang=\\\"en\\\">\\n<Head title={makeTitle(content.filename)} {env} />\\n<body>\\n  {#if user && $user.isAuthenticated}\\n      <svelte:component this={adminMenu} {user} bind:content={content} />\\n  {/if}\\n  <main>\\n    <Nav />\\n    <div class=\\\"container\\\">\\n      <svelte:component this={layout} {...content.fields} {content} {allContent} {allLayouts} {user} />\\n      <br />\\n    </div>\\n    <Footer {allContent} />\\n  </main>\\n</body>\\n</html>\\n\\n<style>\\n  main {\\n    flex: 1 0 auto;\\n  }\\n</style>\\n\"],\"names\":[],\"mappings\":\"AA2BE,IAAI,eAAC,CAAC,AACJ,IAAI,CAAE,CAAC,CAAC,CAAC,CAAC,IAAI,AAChB,CAAC\"}"
+	map: "{\"version\":3,\"file\":\"html.js\",\"sources\":[\"html.js\"],\"sourcesContent\":[\"<script>\\n  import Head from './head.js';\\n  import Nav from './nav.js';\\n  import Footer from './footer.js';\\n  import { makeTitle } from '../scripts/make_title.js';\\n\\n  export let content, layout, allContent, allLayouts, env, user, adminMenu;\\n</script>\\n\\n<html lang=\\\"en\\\">\\n<Head title={makeTitle(content.filename)} {env} />\\n<body>\\n  <main>\\n    <Nav />\\n    <div class=\\\"container\\\">\\n      <svelte:component this={layout} {...content.fields} {content} {allContent} {allLayouts} {user} />\\n      <br />\\n    </div>\\n    <Footer {allContent} />\\n  </main>\\n</body>\\n</html>\\n\\n<style>\\n  main {\\n    flex: 1 0 auto;\\n  }\\n</style>\\n\"],\"names\":[],\"mappings\":\"AAwBE,IAAI,eAAC,CAAC,AACJ,IAAI,CAAE,CAAC,CAAC,CAAC,CAAC,IAAI,AAChB,CAAC\"}"
 };
 
 const Html = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-	let $user, $$unsubscribe_user;
 	let { content, layout, allContent, allLayouts, env, user, adminMenu } = $$props;
-	validate_store(user, 'user');
-	$$unsubscribe_user = subscribe(user, value => $user = value);
 	if ($$props.content === void 0 && $$bindings.content && content !== void 0) $$bindings.content(content);
 	if ($$props.layout === void 0 && $$bindings.layout && layout !== void 0) $$bindings.layout(layout);
 	if ($$props.allContent === void 0 && $$bindings.allContent && allContent !== void 0) $$bindings.allContent(allContent);
@@ -30,35 +25,13 @@ const Html = create_ssr_component(($$result, $$props, $$bindings, slots) => {
 	if ($$props.user === void 0 && $$bindings.user && user !== void 0) $$bindings.user(user);
 	if ($$props.adminMenu === void 0 && $$bindings.adminMenu && adminMenu !== void 0) $$bindings.adminMenu(adminMenu);
 	$$result.css.add(css);
-	let $$settled;
-	let $$rendered;
 
-	do {
-		$$settled = true;
-
-		$$rendered = `<html lang="${"en"}">${validate_component(Head, "Head").$$render($$result, { title: makeTitle(content.filename), env }, {}, {})}
-<body>${user && $user.isAuthenticated
-		? `${validate_component(adminMenu || missing_component, "svelte:component").$$render(
-				$$result,
-				{ user, content },
-				{
-					content: $$value => {
-						content = $$value;
-						$$settled = false;
-					}
-				},
-				{}
-			)}`
-		: ``}
-  <main class="${"svelte-1jzy6jg"}">${validate_component(Nav, "Nav").$$render($$result, {}, {}, {})}
+	return `<html lang="${"en"}">${validate_component(Head, "Head").$$render($$result, { title: makeTitle(content.filename), env }, {}, {})}
+<body><main class="${"svelte-1jzy6jg"}">${validate_component(Nav, "Nav").$$render($$result, {}, {}, {})}
     <div class="${"container"}">${validate_component(layout || missing_component, "svelte:component").$$render($$result, Object.assign(content.fields, { content }, { allContent }, { allLayouts }, { user }), {}, {})}
       <br></div>
     ${validate_component(Footer, "Footer").$$render($$result, { allContent }, {}, {})}</main></body>
 </html>`;
-	} while (!$$settled);
-
-	$$unsubscribe_user();
-	return $$rendered;
 });
 
 export default Html;

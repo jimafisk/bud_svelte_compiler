@@ -66,8 +66,8 @@ func main() {
 	props := map[string]string{
 		"content":    "",
 		"layout":     "",
-		"allContent": "",
-		"allLayouts": "",
+		"allContent": "[]",
+		"allLayouts": "[]",
 		"env":        "",
 		"user":       "",
 		"adminMenu":  "",
