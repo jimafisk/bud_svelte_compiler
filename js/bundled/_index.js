@@ -1,3 +1,4 @@
+(() => {
   // node_modules/svelte/internal/index.mjs
   function noop() {
   }
@@ -303,3 +304,4 @@ ${blog ? `<div><h3>Recent blog posts:</h3>
 ${source ? `${validate_component(source_default, "Uses").$$render($$result, { content, source }, {}, {})}` : ``}`;
   });
   var index_default = Index;
+})();

@@ -1,3 +1,4 @@
+(() => {
   // node_modules/svelte/internal/index.mjs
   function noop() {
   }
@@ -240,3 +241,4 @@ ${source ? `${validate_component(source_default, "Uses").$$render($$result, { co
 <p><a href="${"."}">Back home</a></p>`;
   });
   var pages_default = Pages;
+})();

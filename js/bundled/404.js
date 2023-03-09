@@ -1,3 +1,4 @@
+(() => {
   // node_modules/svelte/internal/index.mjs
   function noop() {
   }
@@ -120,3 +121,4 @@
 <a href="${"."}">Go home?</a>`;
   });
   var __default = _404;
+})();
