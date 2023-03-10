@@ -16,7 +16,9 @@ import (
 	"github.com/livebud/bud/package/svelte"
 )
 
-var wg sync.WaitGroup
+var wgDOM sync.WaitGroup
+var wgSSR sync.WaitGroup
+var wgHTML sync.WaitGroup
 
 func main() {
 	start := time.Now()
@@ -40,10 +42,11 @@ func main() {
 			// Remove the prefix the file was read from, so it can be written to new location
 			destPath := strings.TrimPrefix(path, "templates")
 
+			wgDOM.Add(1)
 			go compileDOM(svelteCompiler, fileContents, path, destPath)
 
 			SSRDest := "js/ssr" + strings.TrimSuffix(destPath, ".svelte") + ".js"
-			wg.Add(1)
+			wgSSR.Add(1)
 			go compileSSR(svelteCompiler, fileContents, path, destPath, SSRDest)
 
 			// Collect each template path in the "content" folder
@@ -69,7 +72,7 @@ func main() {
 	propsJSON, _ := json.Marshal(props)
 	propsJSONStr := string(propsJSON)
 
-	wg.Wait()
+	wgSSR.Wait()
 	elapsed := time.Since(start)
 	fmt.Println("DOM and SSR took: " + elapsed.String())
 	startRender := time.Now()
@@ -77,13 +80,14 @@ func main() {
 	bundledEntrynodes := bundle(entrynodes)
 	// Loop through each bundled entrypoint
 	for _, file := range bundledEntrynodes {
-		wg.Add(1)
+		wgHTML.Add(1)
 		go renderHTML(vm, file, propsJSONStr)
 	}
 
-	wg.Wait()
+	wgHTML.Wait()
 	elapsed = time.Since(startRender)
 	fmt.Println("HTML render took: " + elapsed.String())
+	wgDOM.Wait()
 	elapsed = time.Since(start)
 	fmt.Println("Full build took: " + elapsed.String())
 }
@@ -108,6 +112,7 @@ func bundle(entrypoints []string) []esbuild.OutputFile {
 }
 
 func compileDOM(svelteCompiler *svelte.Compiler, fileContents []byte, path, destPath string) {
+	defer wgDOM.Done()
 	// Compile clientside JS and write to filesystem
 	DOMDest := "js/dom" + strings.TrimSuffix(destPath, ".svelte") + ".js"
 	os.MkdirAll(filepath.Dir(DOMDest), os.ModePerm)
@@ -116,7 +121,7 @@ func compileDOM(svelteCompiler *svelte.Compiler, fileContents []byte, path, dest
 }
 
 func compileSSR(svelteCompiler *svelte.Compiler, fileContents []byte, path, destPath, SSRDest string) {
-	defer wg.Done()
+	defer wgSSR.Done()
 	// Compile serverside JS and write to filesystem
 	os.MkdirAll(filepath.Dir(SSRDest), os.ModePerm)
 	SSR, _ := svelteCompiler.SSR(path, fileContents)
@@ -125,7 +130,7 @@ func compileSSR(svelteCompiler *svelte.Compiler, fileContents []byte, path, dest
 }
 
 func renderHTML(vm *v8.VM, file esbuild.OutputFile, propsJSONStr string) {
-	defer wg.Done()
+	defer wgHTML.Done()
 	// Unwrap bundle to access variables (hacky, probably what esbuild plugins are for)
 	contentStr := string(file.Contents)
 	contentStr = strings.TrimPrefix(contentStr, "(() => {\n")
