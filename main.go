@@ -27,6 +27,10 @@ func main() {
 	vm, _ := v8.Load()
 	svelteCompiler, _ := svelte.Load(vm)
 
+	elapsed := time.Since(start)
+	fmt.Println("Loading v8 took: " + elapsed.String())
+	startWalk := time.Now()
+
 	// Initialize entrypoint pages
 	entrynodes := []string{}
 
@@ -42,8 +46,8 @@ func main() {
 			// Remove the prefix the file was read from, so it can be written to new location
 			destPath := strings.TrimPrefix(path, "templates")
 
-			wgDOM.Add(1)
-			go compileDOM(svelteCompiler, fileContents, path, destPath)
+			//wgDOM.Add(1)
+			//go compileDOM(svelteCompiler, fileContents, path, destPath)
 
 			SSRDest := "js/ssr" + strings.TrimSuffix(destPath, ".svelte") + ".js"
 			wgSSR.Add(1)
@@ -59,6 +63,10 @@ func main() {
 		return nil
 	})
 
+	elapsed = time.Since(startWalk)
+	fmt.Println("Walk files took: " + elapsed.String())
+	finishSSR := time.Now()
+
 	// Create placeholder props that Plenti expects
 	props := map[string]string{
 		"content":    "",
@@ -73,8 +81,8 @@ func main() {
 	propsJSONStr := string(propsJSON)
 
 	wgSSR.Wait()
-	elapsed := time.Since(start)
-	fmt.Println("DOM and SSR took: " + elapsed.String())
+	elapsed = time.Since(finishSSR)
+	fmt.Println("Finish SSR took: " + elapsed.String())
 	startRender := time.Now()
 	// Create bundles (with dependencies) for each top-level page
 	bundledEntrynodes := bundle(entrynodes)
@@ -87,7 +95,30 @@ func main() {
 	wgHTML.Wait()
 	elapsed = time.Since(startRender)
 	fmt.Println("HTML render took: " + elapsed.String())
+	startDOM := time.Now()
+
+	filepath.Walk("templates", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
+
+		if !info.IsDir() && filepath.Ext(path) == ".svelte" {
+			// Get contents of the template
+			fileContents, _ := os.ReadFile(path)
+			// Remove the prefix the file was read from, so it can be written to new location
+			destPath := strings.TrimPrefix(path, "templates")
+
+			wgDOM.Add(1)
+			go compileDOM(svelteCompiler, fileContents, path, destPath)
+		}
+
+		return nil
+	})
 	wgDOM.Wait()
+	elapsed = time.Since(startDOM)
+	fmt.Println("DOM compile took: " + elapsed.String())
+
 	elapsed = time.Since(start)
 	fmt.Println("Full build took: " + elapsed.String())
 }
