@@ -40,7 +40,6 @@ func main() {
 			// Remove the prefix the file was read from, so it can be written to new location
 			destPath := strings.TrimPrefix(path, "templates")
 
-			wg.Add(1)
 			go compileDOM(svelteCompiler, fileContents, path, destPath)
 
 			SSRDest := "js/ssr" + strings.TrimSuffix(destPath, ".svelte") + ".js"
@@ -71,24 +70,22 @@ func main() {
 	propsJSONStr := string(propsJSON)
 
 	wg.Wait()
+	elapsed := time.Since(start)
+	fmt.Println("DOM and SSR took: " + elapsed.String())
+	startRender := time.Now()
 	// Create bundles (with dependencies) for each top-level page
 	bundledEntrynodes := bundle(entrynodes)
 	// Loop through each bundled entrypoint
 	for _, file := range bundledEntrynodes {
-		/*
-			// Write the bundle to fs (for reference only, not used at all)
-			bundledPath := strings.Replace(string(file.Path), "html/", "js/bundled/", 1)
-			os.MkdirAll(filepath.Dir(bundledPath), os.ModePerm)
-			ioutil.WriteFile(bundledPath, file.Contents, os.ModePerm)
-		*/
-
 		wg.Add(1)
 		go renderHTML(vm, file, propsJSONStr)
 	}
 
 	wg.Wait()
-	elapsed := time.Since(start)
-	fmt.Println(elapsed)
+	elapsed = time.Since(startRender)
+	fmt.Println("HTML render took: " + elapsed.String())
+	elapsed = time.Since(start)
+	fmt.Println("Full build took: " + elapsed.String())
 }
 
 func bundle(entrypoints []string) []esbuild.OutputFile {
@@ -111,7 +108,6 @@ func bundle(entrypoints []string) []esbuild.OutputFile {
 }
 
 func compileDOM(svelteCompiler *svelte.Compiler, fileContents []byte, path, destPath string) {
-	defer wg.Done()
 	// Compile clientside JS and write to filesystem
 	DOMDest := "js/dom" + strings.TrimSuffix(destPath, ".svelte") + ".js"
 	os.MkdirAll(filepath.Dir(DOMDest), os.ModePerm)
