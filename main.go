@@ -8,12 +8,15 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	esbuild "github.com/evanw/esbuild/pkg/api"
 	v8 "github.com/livebud/bud/package/js/v8"
 	"github.com/livebud/bud/package/svelte"
 )
+
+var wg sync.WaitGroup
 
 func main() {
 	start := time.Now()
@@ -22,8 +25,6 @@ func main() {
 	vm, _ := v8.Load()
 	svelteCompiler, _ := svelte.Load(vm)
 
-	// Regex to find component name
-	r, _ := regexp.Compile(`\s*var\s.*_default\s=\s(.*);\s*$`)
 	// Initialize entrypoint pages
 	entrynodes := []string{}
 
@@ -39,18 +40,12 @@ func main() {
 			// Remove the prefix the file was read from, so it can be written to new location
 			destPath := strings.TrimPrefix(path, "templates")
 
-			// Compile clientside JS and write to filesystem
-			DOMDest := "js/dom" + strings.TrimSuffix(destPath, ".svelte") + ".js"
-			os.MkdirAll(filepath.Dir(DOMDest), os.ModePerm)
-			DOM, _ := svelteCompiler.DOM(path, fileContents)
-			ioutil.WriteFile(DOMDest, []byte(DOM.JS), os.ModePerm)
+			wg.Add(1)
+			go compileDOM(svelteCompiler, fileContents, path, destPath)
 
-			// Compile serverside JS and write to filesystem
 			SSRDest := "js/ssr" + strings.TrimSuffix(destPath, ".svelte") + ".js"
-			os.MkdirAll(filepath.Dir(SSRDest), os.ModePerm)
-			SSR, _ := svelteCompiler.SSR(path, fileContents)
-			SSR.JS = strings.ReplaceAll(SSR.JS, ".svelte", ".js")
-			ioutil.WriteFile(SSRDest, []byte(SSR.JS), os.ModePerm)
+			wg.Add(1)
+			go compileSSR(svelteCompiler, fileContents, path, destPath, SSRDest)
 
 			// Collect each template path in the "content" folder
 			// to become a top-level page
@@ -75,36 +70,23 @@ func main() {
 	propsJSON, _ := json.Marshal(props)
 	propsJSONStr := string(propsJSON)
 
+	wg.Wait()
 	// Create bundles (with dependencies) for each top-level page
 	bundledEntrynodes := bundle(entrynodes)
 	// Loop through each bundled entrypoint
 	for _, file := range bundledEntrynodes {
-		// Write the bundle to fs (for reference only, not used at all)
-		bundledPath := strings.Replace(string(file.Path), "html/", "js/bundled/", 1)
-		os.MkdirAll(filepath.Dir(bundledPath), os.ModePerm)
-		ioutil.WriteFile(bundledPath, file.Contents, os.ModePerm)
+		/*
+			// Write the bundle to fs (for reference only, not used at all)
+			bundledPath := strings.Replace(string(file.Path), "html/", "js/bundled/", 1)
+			os.MkdirAll(filepath.Dir(bundledPath), os.ModePerm)
+			ioutil.WriteFile(bundledPath, file.Contents, os.ModePerm)
+		*/
 
-		// Unwrap bundle to access variables (hacky, probably what esbuild plugins are for)
-		contentStr := string(file.Contents)
-		contentStr = strings.TrimPrefix(contentStr, "(() => {\n")
-		contentStr = strings.TrimSuffix(contentStr, "})();\n")
-
-		compName := ""
-		compNames := r.FindStringSubmatch(contentStr)
-		if len(compNames) > 1 {
-			compName = compNames[1]
-		}
-		// Actually render the HTML from the unwrapped bundles
-		htmlFile, err := vm.Eval("render.js", contentStr+`; `+compName+`.render(`+propsJSONStr+`).html;`)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		// Write the rendered HTML to the filesystem
-		destPath := strings.TrimSuffix(file.Path, filepath.Ext(file.Path)) + ".html"
-		ioutil.WriteFile(destPath, []byte(htmlFile), os.ModePerm)
+		wg.Add(1)
+		go renderHTML(vm, file, propsJSONStr)
 	}
 
+	wg.Wait()
 	elapsed := time.Since(start)
 	fmt.Println(elapsed)
 }
@@ -126,4 +108,47 @@ func bundle(entrypoints []string) []esbuild.OutputFile {
 		fmt.Printf(strings.Join(msgs, "\n"))
 	}
 	return result.OutputFiles
+}
+
+func compileDOM(svelteCompiler *svelte.Compiler, fileContents []byte, path, destPath string) {
+	defer wg.Done()
+	// Compile clientside JS and write to filesystem
+	DOMDest := "js/dom" + strings.TrimSuffix(destPath, ".svelte") + ".js"
+	os.MkdirAll(filepath.Dir(DOMDest), os.ModePerm)
+	DOM, _ := svelteCompiler.DOM(path, fileContents)
+	ioutil.WriteFile(DOMDest, []byte(DOM.JS), os.ModePerm)
+}
+
+func compileSSR(svelteCompiler *svelte.Compiler, fileContents []byte, path, destPath, SSRDest string) {
+	defer wg.Done()
+	// Compile serverside JS and write to filesystem
+	os.MkdirAll(filepath.Dir(SSRDest), os.ModePerm)
+	SSR, _ := svelteCompiler.SSR(path, fileContents)
+	SSR.JS = strings.ReplaceAll(SSR.JS, ".svelte", ".js")
+	ioutil.WriteFile(SSRDest, []byte(SSR.JS), os.ModePerm)
+}
+
+func renderHTML(vm *v8.VM, file esbuild.OutputFile, propsJSONStr string) {
+	defer wg.Done()
+	// Unwrap bundle to access variables (hacky, probably what esbuild plugins are for)
+	contentStr := string(file.Contents)
+	contentStr = strings.TrimPrefix(contentStr, "(() => {\n")
+	contentStr = strings.TrimSuffix(contentStr, "})();\n")
+
+	// Regex to find component name
+	r, _ := regexp.Compile(`\s*var\s.*_default\s=\s(.*);\s*$`)
+	compName := ""
+	compNames := r.FindStringSubmatch(contentStr)
+	if len(compNames) > 1 {
+		compName = compNames[1]
+	}
+	// Actually render the HTML from the unwrapped bundles
+	htmlFile, err := vm.Eval("render.js", contentStr+`; `+compName+`.render(`+propsJSONStr+`).html;`)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Write the rendered HTML to the filesystem
+	destPath := strings.TrimSuffix(file.Path, filepath.Ext(file.Path)) + ".html"
+	ioutil.WriteFile(destPath, []byte(htmlFile), os.ModePerm)
 }
